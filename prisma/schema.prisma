@@ -38,30 +38,72 @@ datasource db {
 
 // Convert days of week to enum
 model Course {
-  id              Int       @id @default(autoincrement())
-  name            String    @db.VarChar(255)
-  course_number   String    @db.VarChar(255)
-  // instructor_id   Int       @unique
-  // student_id      Int       @unique
-  // ta_id           Int       @unique
-  // prequesite_id   Int?
-  monday          Boolean   @default(false)
-  tuesday         Boolean   @default(false)
-  wednesday       Boolean   @default(false)
-  thursday        Boolean   @default(false)
-  friday          Boolean   @default(false)
+  id              Int            @id @default(autoincrement())
+  name            String         @db.VarChar(255)
+  course_number   String         @db.VarChar(255)
+  instructor_id   Int            @unique
+  student_id      Int            @unique
+  ta_id           Int            @unique
+  // prerequisite_id Int?
+  monday          Boolean        @default(false)
+  tuesday         Boolean        @default(false)
+  wednesday       Boolean        @default(false)
+  thursday        Boolean        @default(false)
+  friday          Boolean        @default(false)
   // semester_id     Int       @unique
-  credit_hours    Int       @default(1)
-  start_time      DateTime? @db.Time
-  end_time        DateTime? @db.Time
-  start_date      DateTime  @db.Date
-  end_date        DateTime  @db.Date
-  subject         String    @db.VarChar(255)
-  location        String    @db.VarChar(255)
-  description     String?   @db.VarChar(255)
+  credit_hours    Int            @default(1)
+  start_time      DateTime?      @db.Time
+  end_time        DateTime?      @db.Time
+  start_date      DateTime       @db.Date
+  end_date        DateTime       @db.Date
+  subject         String         @db.VarChar(255)
+  location        String         @db.VarChar(255)
+  description     String?        @db.VarChar(255)
   capacity        Int
-  enrollment_open Boolean   @default(false)
-  // user            User      @relation(fields: [userId, instructor_id, ta_id], references: [id])
-  // prereq          Course    @relation(fields: [prequesite_id], references: [id])
+  enrollment_open Boolean        @default(false)
+  // prereq          Course[]     @relation(fields: [prerequisite_id], references: [id])
   // semester        Semester  @relation(fields: [semester_id], references: [id])
+  CourseUser      CourseUser[]
+  // Course          Course?      @relation(fields: [courseId], references: [id])
+  // courseId        Int?
+  Prerequisite    Prerequisite[]
+}
+
+model CourseUser {
+  id            Int     @id @default(autoincrement())
+  course_id     Int
+  user_id       Int
+  is_instructor Boolean @default(false)
+  is_ta         Boolean @default(false)
+  course        Course  @relation(fields: [course_id], references: [id])
+  user          User    @relation(fields: [user_id], references: [id])
+}
+
+model Prerequisite {
+  id        Int    @id @default(autoincrement())
+  course_id Int
+  prereq_id Int
+  prereq    Course @relation(fields: [prereq_id], references: [id])
+}
+
+model User {
+  id             Int          @id @default(autoincrement())
+  first_name     String       @db.VarChar(255)
+  last_name      String       @db.VarChar(255)
+  preferred_name String       @db.VarChar(255)
+  gpa            Float
+  email          String       @unique @db.VarChar(255)
+  address        String       @db.VarChar(255)
+  phone          String       @db.VarChar(255)
+  // CourseStu      Course[]     @relation("student")
+  // CourseIns      Course[]     @relation("instructor")
+  // CourseTa       Course[]     @relation("ta")
+  CourseUser     CourseUser[]
+}
+
+model Assignment {
+  id         Int    @id @default(autoincrement())
+  name       String @db.VarChar(255)
+  student_id Int    @unique
+  course_id  Int    @unique
 }
