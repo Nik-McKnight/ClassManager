@@ -37,11 +37,30 @@ datasource db {
 // }
 
 // Convert days of week to enum
+model Semester {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(255)
+  start_date DateTime  @db.Date
+  end_date   DateTime  @db.Date
+  holiday    Holiday[]
+  Course     Course[]
+}
+
+model Holiday {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  start_date  DateTime @db.Date
+  end_date    DateTime @db.Date
+  semester_id Int
+  semester    Semester @relation(fields: [semester_id], references: [id])
+}
+
 model Course {
   id              Int            @id @default(autoincrement())
   name            String         @db.VarChar(255)
   course_number   String         @db.VarChar(255)
   credit_hours    Int            @default(1)
+  semester_id     Int
   monday          Boolean        @default(false)
   tuesday         Boolean        @default(false)
   wednesday       Boolean        @default(false)
@@ -49,15 +68,12 @@ model Course {
   friday          Boolean        @default(false)
   start_time      DateTime?      @db.Time
   end_time        DateTime?      @db.Time
-  // semester_id     Int       @unique
-  start_date      DateTime       @db.Date
-  end_date        DateTime       @db.Date
   subject         String         @db.VarChar(255)
   location        String         @db.VarChar(255)
   description     String?        @db.VarChar(255)
   capacity        Int
   enrollment_open Boolean        @default(false)
-  // semester        Semester  @relation(fields: [semester_id], references: [id])
+  semester        Semester       @relation(fields: [semester_id], references: [id])
   CourseUser      CourseUser[]
   Prerequisite    Prerequisite[]
   Assignment      Assignment?
