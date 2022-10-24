@@ -41,19 +41,15 @@ model Course {
   id              Int            @id @default(autoincrement())
   name            String         @db.VarChar(255)
   course_number   String         @db.VarChar(255)
-  instructor_id   Int            @unique
-  student_id      Int            @unique
-  ta_id           Int            @unique
-  // prerequisite_id Int?
+  credit_hours    Int            @default(1)
   monday          Boolean        @default(false)
   tuesday         Boolean        @default(false)
   wednesday       Boolean        @default(false)
   thursday        Boolean        @default(false)
   friday          Boolean        @default(false)
-  // semester_id     Int       @unique
-  credit_hours    Int            @default(1)
   start_time      DateTime?      @db.Time
   end_time        DateTime?      @db.Time
+  // semester_id     Int       @unique
   start_date      DateTime       @db.Date
   end_date        DateTime       @db.Date
   subject         String         @db.VarChar(255)
@@ -61,22 +57,11 @@ model Course {
   description     String?        @db.VarChar(255)
   capacity        Int
   enrollment_open Boolean        @default(false)
-  // prereq          Course[]     @relation(fields: [prerequisite_id], references: [id])
   // semester        Semester  @relation(fields: [semester_id], references: [id])
   CourseUser      CourseUser[]
-  // Course          Course?      @relation(fields: [courseId], references: [id])
-  // courseId        Int?
   Prerequisite    Prerequisite[]
-}
-
-model CourseUser {
-  id            Int     @id @default(autoincrement())
-  course_id     Int
-  user_id       Int
-  is_instructor Boolean @default(false)
-  is_ta         Boolean @default(false)
-  course        Course  @relation(fields: [course_id], references: [id])
-  user          User    @relation(fields: [user_id], references: [id])
+  Assignment      Assignment?
+  Grade           Grade?
 }
 
 model Prerequisite {
@@ -95,15 +80,45 @@ model User {
   email          String       @unique @db.VarChar(255)
   address        String       @db.VarChar(255)
   phone          String       @db.VarChar(255)
-  // CourseStu      Course[]     @relation("student")
-  // CourseIns      Course[]     @relation("instructor")
-  // CourseTa       Course[]     @relation("ta")
   CourseUser     CourseUser[]
+  Assignment     Assignment?
+  Grade          Grade?
+}
+
+model CourseUser {
+  id            Int     @id @default(autoincrement())
+  course_id     Int
+  user_id       Int
+  is_instructor Boolean @default(false)
+  is_ta         Boolean @default(false)
+  course        Course  @relation(fields: [course_id], references: [id])
+  user          User    @relation(fields: [user_id], references: [id])
 }
 
 model Assignment {
-  id         Int    @id @default(autoincrement())
-  name       String @db.VarChar(255)
-  student_id Int    @unique
-  course_id  Int    @unique
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  student_id Int      @unique
+  course_id  Int      @unique
+  due_date   DateTime @db.Date
+  submitted  Boolean  @default(false)
+  grade      Int
+  published  Boolean  @default(false)
+  is_quiz    Boolean  @default(false)
+  is_exam    Boolean  @default(false)
+  course     Course   @relation(fields: [course_id], references: [id])
+  student    User     @relation(fields: [student_id], references: [id])
+  Grade      Grade?
+}
+
+model Grade {
+  id            Int        @id @default(autoincrement())
+  student_id    Int        @unique
+  course_id     Int        @unique
+  assignment_id Int        @unique
+  in_progress   Boolean    @default(true)
+  grade         Int
+  course        Course     @relation(fields: [course_id], references: [id])
+  student       User       @relation(fields: [student_id], references: [id])
+  assignment    Assignment @relation(fields: [assignment_id], references: [id])
 }
