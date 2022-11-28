@@ -34,7 +34,7 @@ model Course {
   name            String         @db.VarChar(255)
   course_number   String         @db.VarChar(255)
   credit_hours    Int            @default(1)
-  semester_id     Int
+  semester_id     Int?
   monday          Boolean        @default(false)
   tuesday         Boolean        @default(false)
   wednesday       Boolean        @default(false)
@@ -47,7 +47,7 @@ model Course {
   description     String?        @db.VarChar(255)
   capacity        Int
   enrollment_open Boolean        @default(false)
-  semester        Semester       @relation(fields: [semester_id], references: [id])
+  semester        Semester?      @relation(fields: [semester_id], references: [id])
   CourseUser      CourseUser[]
   Prerequisite    Prerequisite[]
   Assignment      Assignment?
