@@ -40,13 +40,14 @@ model Course {
   wednesday       Boolean        @default(false)
   thursday        Boolean        @default(false)
   friday          Boolean        @default(false)
-  start_time      DateTime?      @db.Time
-  end_time        DateTime?      @db.Time
+  start_time      String?        @db.VarChar(255)
+  end_time        String?        @db.VarChar(255)
   subject         String         @db.VarChar(255)
   location        String         @db.VarChar(255)
   description     String?        @db.VarChar(255)
   capacity        Int
   enrollment_open Boolean        @default(false)
+  asynchronous    Boolean        @default(false)
   semester        Semester?      @relation(fields: [semester_id], references: [id])
   CourseUser      CourseUser[]
   Prerequisite    Prerequisite[]
