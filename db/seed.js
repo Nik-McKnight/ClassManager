@@ -5,10 +5,79 @@ const fs = require("fs");
 const { parse } = require("csv-parse");
 let users = [];
 let courses = [];
+let holidays = [];
+let prerequisites = [];
+let semesters = [];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+const createSemesters = async () => {
+  await prisma.Semester.deleteMany({});
+  for (const semester of semesters) {
+    await prisma.Semester.create({
+      data: {
+        name: semester[0],
+        start_date: semester[1],
+        end_date: semester[2],
+      },
+    });
+  }
+};
+
+const createHolidays = async () => {
+  await prisma.Holiday.deleteMany({});
+  for (const holiday of holidays) {
+    await prisma.Holiday.create({
+      data: {
+        name: holiday[0],
+        start_date: holiday[1],
+        end_date: holiday[2],
+      },
+    });
+  }
+};
+
+const createCourses = async () => {
+  await prisma.Course.deleteMany({});
+  for (const course of courses) {
+    await prisma.Course.create({
+      data: {
+        name: course[0],
+        course_number: course[1],
+        credit_hours: +course[2],
+        semester_id: +course[3],
+        //semester_id: 0,
+        monday: course[4] == "TRUE",
+        tuesday: course[5] == "TRUE",
+        wednesday: course[6] == "TRUE",
+        thursday: course[7] == "TRUE",
+        friday: course[8] == "TRUE",
+        start_time: course[9],
+        end_time: course[10],
+        subject: course[11],
+        location: course[12],
+        description: course[13],
+        capacity: +course[14],
+        enrollment_open: course[15] == "TRUE",
+        asynchronous: course[16] == "TRUE",
+      },
+    });
+  }
+};
+
+const createPrerequisites = async () => {
+  await prisma.Prerequisite.deleteMany({});
+  for (const prerequisite of prerequisites) {
+    await prisma.Prerequisite.create({
+      data: {
+        course_id: prerequisite[0],
+        prereq_id: prerequisite[1],
+      },
+    });
+  }
+};
 
 const createUsers = async () => {
   await prisma.User.deleteMany({});
@@ -26,45 +95,12 @@ const createUsers = async () => {
     });
   }
 };
-
-const createCourses = async () => {
-  await prisma.Course.deleteMany({});
-  for (const course of courses) {
-    await prisma.Course.create({
-      data: {
-        name: course[0],
-        course_number: course[1],
-        credit_hours: +course[2],
-        // semester_id: +course[3],
-        //semester_id: 0,
-        monday: course[4] == "TRUE",
-        tuesday: course[5] == "TRUE",
-        wednesday: course[6] == "TRUE",
-        thursday: course[7] == "TRUE",
-        friday: course[8] == "TRUE",
-        start_time: course[9],
-        end_time: course[10],
-        // start_time: "8:00",
-        // end_time: "8:00",
-        subject: course[11],
-        location: course[12],
-        description: course[13],
-        capacity: +course[14],
-        enrollment_open: course[15] == "TRUE",
-        asynchronous: course[16] == "TRUE",
-      },
-    });
-  }
-};
-
 const getUsers = async () => {
   var result = [];
   // Read user data
   fs.createReadStream("/home/nik/projects/classManager/db/users.csv")
     .pipe(parse({ delimiter: ",", from_line: 2 }))
     .on("data", function (row) {
-      // let user = csv.toArray(row);
-      // console.log(user);
       result.push(row);
     })
     .on("end", function () {
@@ -77,13 +113,10 @@ const getUsers = async () => {
 
 const getCourses = async () => {
   var result = [];
-  // Read user data
   result = [];
   fs.createReadStream("/home/nik/projects/classManager/db/courses.csv")
     .pipe(parse({ delimiter: ",", from_line: 2 }))
     .on("data", function (row) {
-      // let user = csv.toArray(row);
-      // console.log(user);
       result.push(row);
       console.log(result.length);
     })
@@ -96,15 +129,74 @@ const getCourses = async () => {
     });
 };
 
+const getHolidays = async () => {
+  var result = [];
+  result = [];
+  fs.createReadStream("/home/nik/projects/classManager/db/Holidays.csv")
+    .pipe(parse({ delimiter: ",", from_line: 2 }))
+    .on("data", function (row) {
+      result.push(row);
+      console.log(result.length);
+    })
+    .on("end", function () {
+      holidays = result;
+      console.log(holidays.length);
+    })
+    .on("error", function (error) {
+      console.log(error.message);
+    });
+};
+
+const getSemesters = async () => {
+  var result = [];
+  result = [];
+  fs.createReadStream("/home/nik/projects/classManager/db/Semesters.csv")
+    .pipe(parse({ delimiter: ",", from_line: 2 }))
+    .on("data", function (row) {
+      result.push(row);
+      console.log(result.length);
+    })
+    .on("end", function () {
+      semesters = result;
+      console.log(semesters.length);
+    })
+    .on("error", function (error) {
+      console.log(error.message);
+    });
+};
+
+const getPrerequisites = async () => {
+  var result = [];
+  result = [];
+  fs.createReadStream("/home/nik/projects/classManager/db/prerequisites.csv")
+    .pipe(parse({ delimiter: ",", from_line: 2 }))
+    .on("data", function (row) {
+      result.push(row);
+      console.log(result.length);
+    })
+    .on("end", function () {
+      prerequisites = result;
+      console.log(prerequisites.length);
+    })
+    .on("error", function (error) {
+      console.log(error.message);
+    });
+};
+
 const initDb = async () => {
   try {
-    getUsers();
+    getSemesters();
+    getHolidays();
     getCourses();
+    getPrerequisites();
+    getUsers();
     await sleep(1000);
-    console.log(users.length);
-    await createUsers();
+    await createSemesters();
+    await createHolidays();
     await createCourses();
-    console.log("users created");
+    await createPrerequisites();
+    await createUsers();
+    console.log("Database seeded");
   } catch (error) {
     console.error(error);
   } finally {

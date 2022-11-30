@@ -12,54 +12,52 @@ datasource db {
 
 // Convert days of week to enum
 model Semester {
-  id         Int       @id @default(autoincrement())
-  name       String    @db.VarChar(255)
-  start_date DateTime  @db.Date
-  end_date   DateTime  @db.Date
-  holiday    Holiday[]
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  start_date String   @db.VarChar(255)
+  end_date   String   @db.VarChar(255)
+  // holiday    Holiday[]
   Course     Course[]
 }
 
 model Holiday {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  start_date  DateTime @db.Date
-  end_date    DateTime @db.Date
-  semester_id Int
-  semester    Semester @relation(fields: [semester_id], references: [id])
+  id         Int    @id @default(autoincrement())
+  name       String @db.VarChar(255)
+  start_date String @db.VarChar(255)
+  end_date   String @db.VarChar(255)
+  // semester_id Int?      
+  // semester    Semester? @relation(fields: [semester_id], references: [id])
 }
 
 model Course {
-  id              Int            @id @default(autoincrement())
-  name            String         @db.VarChar(255)
-  course_number   String         @db.VarChar(255)
-  credit_hours    Int            @default(1)
+  id              Int          @id @default(autoincrement())
+  name            String       @db.VarChar(255)
+  course_number   String       @db.VarChar(255)
+  credit_hours    Int          @default(1)
   semester_id     Int?
-  monday          Boolean        @default(false)
-  tuesday         Boolean        @default(false)
-  wednesday       Boolean        @default(false)
-  thursday        Boolean        @default(false)
-  friday          Boolean        @default(false)
-  start_time      String?        @db.VarChar(255)
-  end_time        String?        @db.VarChar(255)
-  subject         String         @db.VarChar(255)
-  location        String         @db.VarChar(255)
-  description     String?        @db.VarChar(255)
+  monday          Boolean      @default(false)
+  tuesday         Boolean      @default(false)
+  wednesday       Boolean      @default(false)
+  thursday        Boolean      @default(false)
+  friday          Boolean      @default(false)
+  start_time      String?      @db.VarChar(255)
+  end_time        String?      @db.VarChar(255)
+  subject         String       @db.VarChar(255)
+  location        String       @db.VarChar(255)
+  description     String?      @db.VarChar(255)
   capacity        Int
-  enrollment_open Boolean        @default(false)
-  asynchronous    Boolean        @default(false)
-  semester        Semester?      @relation(fields: [semester_id], references: [id])
+  enrollment_open Boolean      @default(false)
+  asynchronous    Boolean      @default(false)
+  semester        Semester?    @relation(fields: [semester_id], references: [id])
   CourseUser      CourseUser[]
-  Prerequisite    Prerequisite[]
   Assignment      Assignment?
   Grade           Grade?
 }
 
 model Prerequisite {
   id        Int    @id @default(autoincrement())
-  course_id Int
-  prereq_id Int
-  prereq    Course @relation(fields: [prereq_id], references: [id])
+  course_id String
+  prereq_id String
 }
 
 model User {
