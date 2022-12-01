@@ -8,6 +8,7 @@ let courses = [];
 let holidays = [];
 let prerequisites = [];
 let semesters = [];
+let courseUsers = [];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -95,9 +96,23 @@ const createUsers = async () => {
     });
   }
 };
+
+const createCourseUsers = async () => {
+  await prisma.CourseUser.deleteMany({});
+  for (const courseUser of courseUsers) {
+    await prisma.CourseUser.create({
+      data: {
+        course_id: +courseUser[0],
+        user_id: +courseUser[1],
+        is_instructor: courseUser[2] == "TRUE",
+        is_ta: courseUser[3] == "TRUE",
+      },
+    });
+  }
+};
+
 const getUsers = async () => {
   var result = [];
-  // Read user data
   fs.createReadStream("/home/nik/projects/classManager/db/users.csv")
     .pipe(parse({ delimiter: ",", from_line: 2 }))
     .on("data", function (row) {
@@ -113,7 +128,6 @@ const getUsers = async () => {
 
 const getCourses = async () => {
   var result = [];
-  result = [];
   fs.createReadStream("/home/nik/projects/classManager/db/courses.csv")
     .pipe(parse({ delimiter: ",", from_line: 2 }))
     .on("data", function (row) {
@@ -131,7 +145,6 @@ const getCourses = async () => {
 
 const getHolidays = async () => {
   var result = [];
-  result = [];
   fs.createReadStream("/home/nik/projects/classManager/db/Holidays.csv")
     .pipe(parse({ delimiter: ",", from_line: 2 }))
     .on("data", function (row) {
@@ -149,7 +162,6 @@ const getHolidays = async () => {
 
 const getSemesters = async () => {
   var result = [];
-  result = [];
   fs.createReadStream("/home/nik/projects/classManager/db/Semesters.csv")
     .pipe(parse({ delimiter: ",", from_line: 2 }))
     .on("data", function (row) {
@@ -167,7 +179,6 @@ const getSemesters = async () => {
 
 const getPrerequisites = async () => {
   var result = [];
-  result = [];
   fs.createReadStream("/home/nik/projects/classManager/db/prerequisites.csv")
     .pipe(parse({ delimiter: ",", from_line: 2 }))
     .on("data", function (row) {
@@ -183,6 +194,23 @@ const getPrerequisites = async () => {
     });
 };
 
+const getCourseUsers = async () => {
+  var result = [];
+  fs.createReadStream("/home/nik/projects/classManager/db/CourseUsers.csv")
+    .pipe(parse({ delimiter: ",", from_line: 2 }))
+    .on("data", function (row) {
+      result.push(row);
+      console.log(result.length);
+    })
+    .on("end", function () {
+      courseUsers = result;
+      console.log(courseUsers.length);
+    })
+    .on("error", function (error) {
+      console.log(error.message);
+    });
+};
+
 const initDb = async () => {
   try {
     getSemesters();
@@ -190,12 +218,14 @@ const initDb = async () => {
     getCourses();
     getPrerequisites();
     getUsers();
-    await sleep(1000);
+    getCourseUsers();
+    await sleep(2000);
     await createSemesters();
     await createHolidays();
     await createCourses();
     await createPrerequisites();
     await createUsers();
+    await createCourseUsers();
     console.log("Database seeded");
   } catch (error) {
     console.error(error);
