@@ -10,13 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Convert days of week to enum
+// Convert days of week to enum?
 model Semester {
   id         Int      @id @default(autoincrement())
   name       String   @db.VarChar(255)
   start_date String   @db.VarChar(255)
   end_date   String   @db.VarChar(255)
-  // holiday    Holiday[]
   Course     Course[]
 }
 
@@ -25,8 +24,6 @@ model Holiday {
   name       String @db.VarChar(255)
   start_date String @db.VarChar(255)
   end_date   String @db.VarChar(255)
-  // semester_id Int?      
-  // semester    Semester? @relation(fields: [semester_id], references: [id])
 }
 
 model Course {
