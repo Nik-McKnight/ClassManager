@@ -1,23 +1,24 @@
 const { PrismaClient } = require("@prisma/client");
-var csv = require("jquery-csv");
 const prisma = new PrismaClient();
 const fs = require("fs");
 const { parse } = require("csv-parse");
+const bcrypt = require("bcrypt");
+const SALT_ROUNDS = 10;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const getData = async (url) => {
+const getData = async (path) => {
   const promise = new Promise((resolve, reject) => {
     var result = [];
-    fs.createReadStream(url)
+    fs.createReadStream(path)
       .pipe(parse({ delimiter: ",", from_line: 2 }))
       .on("data", function (row) {
         result.push(row);
       })
       .on("end", function () {
-        console.log(`Read data from ${url.slice(35)}`);
+        console.log(`Read data from ${path.slice(35)}`);
       })
       .on("error", function (error) {
         console.log(error.message);
@@ -96,6 +97,7 @@ const createPrerequisites = async (prerequisites) => {
 const createUsers = async (users) => {
   await prisma.User.deleteMany({});
   for (const user of users) {
+    const hashedPassword = await bcrypt.hash(user[7], SALT_ROUNDS);
     await prisma.User.create({
       data: {
         first_name: user[0],
@@ -105,6 +107,7 @@ const createUsers = async (users) => {
         gpa: +user[4],
         address: user[5],
         phone: user[6],
+        password: hashedPassword,
       },
     });
   }
@@ -147,7 +150,7 @@ const initDb = async () => {
     getData("/home/nik/projects/classManager/db/users.csv").then((data) => {
       createUsers(data);
     });
-    await sleep(100);
+    await sleep(100000);
     getData("/home/nik/projects/classManager/db/CourseUsers.csv").then(
       (data) => {
         createCourseUsers(data);
@@ -156,6 +159,7 @@ const initDb = async () => {
   } catch (error) {
     console.error(error);
   } finally {
+    console.log("Data has been seeded.");
     await prisma.$disconnect();
   }
 };
