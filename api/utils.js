@@ -34,7 +34,7 @@ const adminRequired = (req, res, next) => {
     }
   } catch (error) {
     next({
-      message: "You are not authorized",
+      message: "You are not authorized to perform this action.",
     });
   }
 };

@@ -16,6 +16,7 @@ authRouter.get("/me", userRequired, (req, res, next) => {
 
 // first name, lastname, email, username, password
 authRouter.post("/register", async (req, res, next) => {
+  let user;
   try {
     const {
       first_name,
@@ -28,7 +29,7 @@ authRouter.post("/register", async (req, res, next) => {
       password,
     } = req.body;
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await prisma.User.create({
+    user = await prisma.User.create({
       data: {
         first_name: first_name,
         last_name: last_name,
@@ -40,6 +41,10 @@ authRouter.post("/register", async (req, res, next) => {
         password: hashedPassword,
       },
     });
+  } catch (error) {
+    //next(error);
+  }
+  if (user) {
     delete user.password;
 
     const token = jwt.sign(user, JWT_SECRET);
@@ -54,9 +59,7 @@ authRouter.post("/register", async (req, res, next) => {
     req.user = user;
 
     res.send({ user });
-  } catch (error) {
-    next(error);
-  }
+  } else res.send("A user with that email already exists.");
 });
 
 // Consolidate login and login/alt
@@ -125,48 +128,5 @@ authRouter.post("/logout", async (req, res, next) => {
     next(error);
   }
 });
-
-// Example of how to use authorization middleware
-
-// authRouter.get(`/:id`, userRequired, adminRequired, async (req, res, next) => {
-//   const { id } = req.params;
-//   // const id = 1;
-//   try {
-//     const user = await prisma.users.findUnique({
-//       where: {
-//         id: +id,
-//       },
-//     });
-//     res.send(user);
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
-authRouter.post(
-  "/delete",
-  userRequired,
-  adminRequired,
-  async (req, res, next) => {
-    const { email } = req.body;
-    console.log(email);
-    try {
-      const user = await prisma.User.findUnique({
-        where: {
-          email: email,
-        },
-      });
-      await prisma.courseUser.deleteMany({ where: { user_id: user.id } });
-      const deletedUser = await prisma.User.delete({
-        where: {
-          email: email,
-        },
-      });
-      res.send(deletedUser);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
 
 module.exports = authRouter;
