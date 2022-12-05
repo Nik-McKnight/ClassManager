@@ -120,6 +120,7 @@ userRouter.patch(
           address,
           phone,
           password,
+          is_admin,
         } = req.body;
         const updatedUser = await prisma.User.update({
           where: {
@@ -136,6 +137,7 @@ userRouter.patch(
             address: address ? address : user.address,
             phone: phone ? phone : user.phone,
             password: password ? password : user.password,
+            is_admin: is_admin ? is_admin == "TRUE" : user.is_admin,
           },
         });
         res.send({ updatedUser });
