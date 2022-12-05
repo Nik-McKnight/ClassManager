@@ -40,6 +40,7 @@ const createSemesters = async (semesters) => {
       },
     });
   }
+  console.log("Semesters seeded.");
 };
 
 const createHolidays = async (holidays) => {
@@ -53,6 +54,7 @@ const createHolidays = async (holidays) => {
       },
     });
   }
+  console.log("Holidays seeded.");
 };
 
 const createCourses = async (courses) => {
@@ -80,6 +82,7 @@ const createCourses = async (courses) => {
       },
     });
   }
+  console.log("Courses seeded.");
 };
 
 const createPrerequisites = async (prerequisites) => {
@@ -92,6 +95,7 @@ const createPrerequisites = async (prerequisites) => {
       },
     });
   }
+  console.log("Prerequisites seeded.");
 };
 
 const createUsers = async (users) => {
@@ -108,9 +112,11 @@ const createUsers = async (users) => {
         address: user[5],
         phone: user[6],
         password: hashedPassword,
+        is_admin: user[8] == "TRUE",
       },
     });
   }
+  console.log("Users seeded.");
 };
 
 const createCourseUsers = async (courseUsers) => {
@@ -125,6 +131,7 @@ const createCourseUsers = async (courseUsers) => {
       },
     });
   }
+  console.log("CourseUsers seeded.");
 };
 
 const initDb = async () => {
@@ -150,7 +157,7 @@ const initDb = async () => {
     getData("/home/nik/projects/classManager/db/users.csv").then((data) => {
       createUsers(data);
     });
-    await sleep(100000);
+    await sleep(50000);
     getData("/home/nik/projects/classManager/db/CourseUsers.csv").then(
       (data) => {
         createCourseUsers(data);

@@ -67,6 +67,7 @@ model User {
   address        String       @db.VarChar(255)
   phone          String       @db.VarChar(255)
   password       String       @db.VarChar(255)
+  is_admin       Boolean?     @default(false)
   CourseUser     CourseUser[]
   Assignment     Assignment?
   Grade          Grade?
