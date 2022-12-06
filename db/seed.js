@@ -43,18 +43,19 @@ const createSemesters = async (semesters) => {
   console.log("Semesters seeded.");
 };
 
-const createHolidays = async (holidays) => {
-  await prisma.Holiday.deleteMany({});
-  for (const holiday of holidays) {
-    await prisma.Holiday.create({
+const createEvents = async (events) => {
+  await prisma.Event.deleteMany({});
+  for (const event of events) {
+    await prisma.Event.create({
       data: {
-        name: holiday[0],
-        start_date: holiday[1],
-        end_date: holiday[2],
+        name: event[0],
+        start_date: event[1],
+        end_date: event[2],
+        is_holiday: event[3] === "TRUE",
       },
     });
   }
-  console.log("Holidays seeded.");
+  console.log("Events seeded.");
 };
 
 const createCourses = async (courses) => {
@@ -141,7 +142,7 @@ const initDb = async () => {
     });
     await sleep(100);
     getData("/home/nik/projects/classManager/db/Holidays.csv").then((data) => {
-      createHolidays(data);
+      createEvents(data);
     });
     await sleep(100);
     getData("/home/nik/projects/classManager/db/courses.csv").then((data) => {
