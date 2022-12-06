@@ -16,18 +16,20 @@ const userRequired = (req, res, next) => {
   next();
 };
 
-const getUser = (req, res, next) => {
-  if (req.signedCookies.token) {
-    const token = req.signedCookies.token;
-    const user = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = user;
-  }
-  next();
-};
-
-//checks that a specific user is an admin
+//checks that a user is logged in as an admin
 
 const adminRequired = (req, res, next) => {
+  if (!req.signedCookies.token) {
+    res.status(401).send({
+      loggedIn: false,
+      message: "You must be logged in to perform this action",
+    });
+    return;
+  }
+  const token = req.signedCookies.token;
+  const user = jwt.verify(token, process.env.JWT_SECRET);
+  req.user = user;
+
   try {
     if (req.user.is_admin) {
       next();
@@ -39,4 +41,4 @@ const adminRequired = (req, res, next) => {
   }
 };
 
-module.exports = { userRequired, adminRequired, getUser };
+module.exports = { userRequired, adminRequired };

@@ -17,7 +17,7 @@ apiRouter.get("/health", (req, res, next) => {
 apiRouter.use(cookieParser(process.env.COOKIE_SECRET));
 apiRouter.use("/auth", require("./auth"));
 apiRouter.use("/users", require("./users"));
-// apiRouter.use("/courses", require("./courses"));
+apiRouter.use("/courses", require("./courses"));
 
 apiRouter.get("*", (req, res, next) => {
   res.statusCode = 404;

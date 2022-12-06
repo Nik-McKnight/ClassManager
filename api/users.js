@@ -5,7 +5,7 @@ const userRouter = require("express").Router();
 
 const SALT_ROUNDS = 10;
 
-userRouter.post("/", userRequired, adminRequired, async (req, res, next) => {
+userRouter.post("/", adminRequired, async (req, res, next) => {
   let user;
   try {
     const {
@@ -42,7 +42,7 @@ userRouter.post("/", userRequired, adminRequired, async (req, res, next) => {
   } else res.send("A user with that email already exists.");
 });
 
-userRouter.get("/", userRequired, adminRequired, async (req, res, next) => {
+userRouter.get("/", adminRequired, async (req, res, next) => {
   const { email, id } = req.body;
   let user;
 
@@ -97,58 +97,51 @@ userRouter.patch("/", userRequired, async (req, res, next) => {
   }
 });
 
-userRouter.patch(
-  "/:id",
-  userRequired,
-  adminRequired,
-  async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const user = await prisma.User.findUnique({
+userRouter.patch("/:id", adminRequired, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await prisma.User.findUnique({
+      where: {
+        id: +id,
+      },
+    });
+    if (user) {
+      const {
+        first_name,
+        last_name,
+        email,
+        preferred_name,
+        gpa,
+        address,
+        phone,
+        password,
+        is_admin,
+      } = req.body;
+      const updatedUser = await prisma.User.update({
         where: {
           id: +id,
         },
+        data: {
+          first_name: first_name ? first_name : user.first_name,
+          last_name: last_name ? last_name : user.last_name,
+          email: email ? email : user.email,
+          preferred_name: preferred_name ? preferred_name : user.preferred_name,
+          gpa: gpa ? gpa : user.gpa,
+          address: address ? address : user.address,
+          phone: phone ? phone : user.phone,
+          password: password ? password : user.password,
+          is_admin: is_admin ? is_admin == "TRUE" : user.is_admin,
+        },
       });
-      if (user) {
-        const {
-          first_name,
-          last_name,
-          email,
-          preferred_name,
-          gpa,
-          address,
-          phone,
-          password,
-          is_admin,
-        } = req.body;
-        const updatedUser = await prisma.User.update({
-          where: {
-            id: +id,
-          },
-          data: {
-            first_name: first_name ? first_name : user.first_name,
-            last_name: last_name ? last_name : user.last_name,
-            email: email ? email : user.email,
-            preferred_name: preferred_name
-              ? preferred_name
-              : user.preferred_name,
-            gpa: gpa ? gpa : user.gpa,
-            address: address ? address : user.address,
-            phone: phone ? phone : user.phone,
-            password: password ? password : user.password,
-            is_admin: is_admin ? is_admin == "TRUE" : user.is_admin,
-          },
-        });
-        delete updatedUser.password;
-        res.send({ updatedUser });
-      }
-    } catch (error) {
-      next(error);
+      delete updatedUser.password;
+      res.send({ updatedUser });
     }
+  } catch (error) {
+    next(error);
   }
-);
+});
 
-userRouter.delete("/", userRequired, adminRequired, async (req, res, next) => {
+userRouter.delete("/", adminRequired, async (req, res, next) => {
   const { email, id } = req.body;
   let user;
   try {
