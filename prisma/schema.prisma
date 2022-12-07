@@ -48,8 +48,6 @@ model Course {
   asynchronous    Boolean      @default(false)
   semester        Semester?    @relation(fields: [semester_id], references: [id])
   CourseUser      CourseUser[]
-  Assignment      Assignment?
-  Grade           Grade?
 }
 
 model Prerequisite {
@@ -70,44 +68,30 @@ model User {
   password       String       @db.VarChar(255)
   is_admin       Boolean?     @default(false)
   CourseUser     CourseUser[]
-  Assignment     Assignment?
-  Grade          Grade?
 }
 
 model CourseUser {
-  id            Int     @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   course_id     Int
   user_id       Int
-  is_instructor Boolean @default(false)
-  is_ta         Boolean @default(false)
-  course        Course  @relation(fields: [course_id], references: [id])
-  user          User    @relation(fields: [user_id], references: [id])
+  is_instructor Boolean      @default(false)
+  is_ta         Boolean      @default(false)
+  course_grade  Int?         @default(100)
+  is_enrolled   Boolean      @default(true)
+  course        Course       @relation(fields: [course_id], references: [id])
+  user          User         @relation(fields: [user_id], references: [id])
+  Assignment    Assignment[]
 }
 
 model Assignment {
-  id         Int      @id @default(autoincrement())
-  name       String   @db.VarChar(255)
-  student_id Int      @unique
-  course_id  Int      @unique
-  due_date   DateTime @db.Date
-  submitted  Boolean  @default(false)
-  grade      Int
-  published  Boolean  @default(false)
-  is_quiz    Boolean  @default(false)
-  is_exam    Boolean  @default(false)
-  course     Course   @relation(fields: [course_id], references: [id])
-  student    User     @relation(fields: [student_id], references: [id])
-  Grade      Grade?
-}
-
-model Grade {
-  id            Int        @id @default(autoincrement())
-  student_id    Int        @unique
-  course_id     Int        @unique
-  assignment_id Int        @unique
-  in_progress   Boolean    @default(true)
-  grade         Int
-  course        Course     @relation(fields: [course_id], references: [id])
-  student       User       @relation(fields: [student_id], references: [id])
-  assignment    Assignment @relation(fields: [assignment_id], references: [id])
+  id             Int        @id @default(autoincrement())
+  name           String     @db.VarChar(255)
+  course_user_id Int        @unique
+  due_date       DateTime   @db.Date
+  submitted      Boolean    @default(false)
+  grade          Int?
+  published      Boolean    @default(false)
+  is_quiz        Boolean    @default(false)
+  is_exam        Boolean    @default(false)
+  courseUser     CourseUser @relation(fields: [id], references: [id])
 }

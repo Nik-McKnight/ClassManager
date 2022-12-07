@@ -129,6 +129,8 @@ const createCourseUsers = async (courseUsers) => {
         user_id: +courseUser[1],
         is_instructor: courseUser[2] == "TRUE",
         is_ta: courseUser[3] == "TRUE",
+        course_grade: +courseUser[4],
+        is_enrolled: courseUser[5] == "TRUE",
       },
     });
   }

@@ -71,6 +71,22 @@ userRouter.get("/", adminRequired, async (req, res, next) => {
   }
 });
 
+userRouter.get("/all", adminRequired, async (req, res, next) => {
+  let users;
+
+  try {
+    users = await prisma.User.findMany({});
+    if (users) {
+      for (const user of users) {
+        delete user.password;
+      }
+      res.send(users);
+    } else res.send(`No users found.`);
+  } catch (error) {
+    next(error);
+  }
+});
+
 userRouter.patch("/", userRequired, async (req, res, next) => {
   try {
     const user = req.user;
