@@ -22,7 +22,7 @@ const adminRequired = (req, res, next) => {
   if (!req.signedCookies.token) {
     res.status(401).send({
       loggedIn: false,
-      message: "You must be logged in to perform this action",
+      message: "You must be logged in as an admin to perform this action",
     });
     return;
   }
