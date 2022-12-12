@@ -1,8 +1,75 @@
 const prisma = require("../db/prisma");
-const bcrypt = require("bcrypt");
 const { userRequired, adminRequired } = require("./utils");
 const semesterRouter = require("express").Router();
 
-const SALT_ROUNDS = 10;
+// Create   Add new semester
+semesterRouter.post("/", adminRequired, async (req, res, next) => {
+  try {
+    const { name, start_date, end_date } = req.body;
+    const semester = await prisma.Semester.create({
+      data: {
+        name,
+        start_date,
+        end_date,
+      },
+    });
+    if (semester.success) {
+      res.send(semester);
+    } else {
+      res.send("Semester creation failed.");
+    }
+  } catch (error) {
+    // console.error(error);
+    res.send("Semester creation failed.");
+  }
+});
+
+// TODO
+// Read     Read current semester
+// semesterRouter.get("/", async (req,res,next) => {
+
+// })
+
+// Read     Read all semesters
+semesterRouter.get("/", async (req, res, next) => {
+  try {
+    const semesters = await prisma.Semester.findMany({});
+    if (semesters) {
+      res.send(semesters);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+// Update   Modify current semester start date and end date
+semesterRouter.patch("/", async (req, res, next) => {
+  try {
+    const { id, name, start_date, end_date } = req.body;
+    const semester = await prisma.Semester.findUnique({
+      where: {
+        id: +id,
+      },
+    });
+    const updatedSemester = await prisma.Semester.update({
+      where: {
+        id: +id,
+      },
+      data: {
+        name: name ? name : semester.name,
+        start_date: start_date ? start_date : semester.start_date,
+        end_date: end_date ? end_date : semester.end_date,
+      },
+    });
+    if (updatedSemester) {
+      res.send(updatedSemester);
+    }
+  } catch (error) {
+    res.send("Semester update failed.");
+    // console.error(error);
+  }
+});
+
+// Delete   Not necessary
 
 module.exports = semesterRouter;
