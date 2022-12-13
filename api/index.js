@@ -21,6 +21,7 @@ apiRouter.use("/courses", require("./courses"));
 apiRouter.use("/courseusers", require("./courseusers"));
 apiRouter.use("/events", require("./events"));
 apiRouter.use("/semesters", require("./semesters"));
+apiRouter.use("/prerequisites", require("./prerequisites"));
 
 apiRouter.get("*", (req, res, next) => {
   res.statusCode = 404;

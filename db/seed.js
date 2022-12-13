@@ -160,7 +160,7 @@ const initDb = async () => {
     getData("/home/nik/projects/classManager/db/users.csv").then((data) => {
       createUsers(data);
     });
-    await sleep(50000);
+    await sleep(60000);
     getData("/home/nik/projects/classManager/db/CourseUsers.csv").then(
       (data) => {
         createCourseUsers(data);

@@ -1,25 +1,21 @@
 const prisma = require("../db/prisma");
-const bcrypt = require("bcrypt");
 const { userRequired, adminRequired } = require("./utils");
 const courseUserRouter = require("express").Router();
-
-const SALT_ROUNDS = 10;
 
 //create   add self to class
 courseUserRouter.post("/", userRequired, async (req, res, next) => {
   let courseUser;
   try {
-    const { user } = req.user;
     const { course_id, is_instructor, is_ta, course_grade, is_enrolled } =
       req.body;
     courseUser = await prisma.CourseUser.create({
       data: {
-        course_id: course_id,
+        course_id,
         user_id: req.user.id,
-        is_instructor: is_instructor,
-        is_ta: is_ta,
-        course_grade: course_grade,
-        is_enrolled: is_enrolled,
+        is_instructor: is_instructor === true,
+        is_ta: is_ta === true,
+        course_grade: course_grade ? course_grade : 100,
+        is_enrolled: is_enrolled === true,
       },
     });
   } catch (error) {
@@ -39,12 +35,12 @@ courseUserRouter.post("/:id", adminRequired, async (req, res, next) => {
       req.body;
     courseUser = await prisma.CourseUser.create({
       data: {
-        course_id: course_id,
+        course_id,
         user_id: +id,
-        is_instructor: is_instructor,
-        is_ta: is_ta,
-        course_grade: course_grade,
-        is_enrolled: is_enrolled,
+        is_instructor: is_instructor === true,
+        is_ta: is_ta === true,
+        course_grade: course_grade ? course_grade : 100,
+        is_enrolled: is_enrolled === true,
       },
     });
   } catch (error) {
@@ -168,7 +164,10 @@ courseUserRouter.patch("/", userRequired, async (req, res, next) => {
         id: courseUser[0].id,
       },
       data: {
-        is_enrolled,
+        is_enrolled:
+          is_enrolled || is_enrolled === false
+            ? is_enrolled
+            : courseUser[0].is_enrolled,
       },
     });
     res.send({ updatedCourseUser });

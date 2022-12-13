@@ -6,7 +6,6 @@ const userRouter = require("express").Router();
 const SALT_ROUNDS = 10;
 
 userRouter.post("/", adminRequired, async (req, res, next) => {
-  let user;
   try {
     const {
       first_name,
@@ -20,26 +19,27 @@ userRouter.post("/", adminRequired, async (req, res, next) => {
       is_admin,
     } = req.body;
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    user = await prisma.User.create({
+    const user = await prisma.User.create({
       data: {
-        first_name: first_name,
-        last_name: last_name,
-        email: email,
-        preferred_name: preferred_name,
+        first_name,
+        last_name,
+        email,
+        preferred_name,
         gpa: gpa ? gpa : 4.0,
-        address: address,
-        phone: phone,
+        address,
+        phone,
         password: hashedPassword,
-        is_admin: is_admin == "TRUE",
+        is_admin: is_admin || is_admin === false ? is_admin : user.is_admin,
       },
     });
+    if (user) {
+      delete user.password;
+      res.send({ user });
+    } else res.send("A user with that email already exists.");
   } catch (error) {
-    console.error(error);
+    res.send("A user with that email already exists.");
+    // console.error(error);
   }
-  if (user) {
-    delete user.password;
-    res.send({ user });
-  } else res.send("A user with that email already exists.");
 });
 
 userRouter.get("/", adminRequired, async (req, res, next) => {
@@ -146,7 +146,7 @@ userRouter.patch("/:id", adminRequired, async (req, res, next) => {
           address: address ? address : user.address,
           phone: phone ? phone : user.phone,
           password: password ? password : user.password,
-          is_admin: is_admin ? is_admin == "TRUE" : user.is_admin,
+          is_admin: is_admin || is_admin === false ? is_admin : user.is_admin,
         },
       });
       delete updatedUser.password;

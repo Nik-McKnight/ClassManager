@@ -1,7 +1,7 @@
 const prisma = require("../db/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { userRequired, adminRequired } = require("./utils");
+const { userRequired } = require("./utils");
 const authRouter = require("express").Router();
 
 const { JWT_SECRET } = process.env;
