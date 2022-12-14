@@ -2,7 +2,7 @@ const prisma = require("../db/prisma");
 const { adminRequired } = require("./utils");
 const prerequisiteRouter = require("express").Router();
 
-// Create   Create prereq
+// Create   Create prerequisite
 prerequisiteRouter.post("/", adminRequired, async (req, res, next) => {
   try {
     const { course_id, prereq_id } = req.body;
@@ -12,15 +12,14 @@ prerequisiteRouter.post("/", adminRequired, async (req, res, next) => {
         prereq_id,
       },
     });
-    if (prerequisite) {
-      res.send(prerequisite);
-    }
+    res.send(prerequisite);
   } catch (error) {
-    console.error(error);
+    next(error);
   }
 });
 
-// Read
+// Read   Prerequisites for single course if id is provided,
+//        all prerequisites for every course otherwise.
 prerequisiteRouter.get("/", async (req, res, next) => {
   try {
     const { course_id } = req.body;
@@ -31,18 +30,14 @@ prerequisiteRouter.get("/", async (req, res, next) => {
           course_id,
         },
       });
-      if (prereqs) {
-        res.send(prereqs);
-      }
+      res.send(prereqs);
     } else {
       // Read     Read all prerequisites
       const prereqs = await prisma.Prerequisite.findMany({});
-      if (prereqs) {
-        res.send(prereqs);
-      }
+      res.send(prereqs);
     }
   } catch (error) {
-    console.error(error);
+    next(error);
   }
 });
 
@@ -58,13 +53,9 @@ prerequisiteRouter.delete("/", async (req, res, next) => {
         prereq_id,
       },
     });
-    if (deletedPrerequisites) {
-      res.send(deletedPrerequisites);
-    } else {
-      res.send("No prerequisites to delete.");
-    }
+    res.send(deletedPrerequisites);
   } catch (error) {
-    console.error(error);
+    next(error);
   }
 });
 

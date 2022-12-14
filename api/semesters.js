@@ -13,36 +13,23 @@ semesterRouter.post("/", adminRequired, async (req, res, next) => {
         end_date,
       },
     });
-    if (semester.success) {
-      res.send(semester);
-    } else {
-      res.send("Semester creation failed.");
-    }
+    res.send(semester);
   } catch (error) {
-    // console.error(error);
-    res.send("Semester creation failed.");
+    next(error);
   }
 });
-
-// TODO
-// Read     Read current semester
-// semesterRouter.get("/", async (req,res,next) => {
-
-// })
 
 // Read     Read all semesters
 semesterRouter.get("/", async (req, res, next) => {
   try {
     const semesters = await prisma.Semester.findMany({});
-    if (semesters) {
-      res.send(semesters);
-    }
+    res.send(semesters);
   } catch (error) {
-    console.error(error);
+    next(error);
   }
 });
 
-// Update   Modify current semester start date and end date
+// Update   Update semester start date and end date
 semesterRouter.patch("/", async (req, res, next) => {
   try {
     const { id, name, start_date, end_date } = req.body;
@@ -61,12 +48,9 @@ semesterRouter.patch("/", async (req, res, next) => {
         end_date: end_date ? end_date : semester.end_date,
       },
     });
-    if (updatedSemester) {
-      res.send(updatedSemester);
-    }
+    res.send(updatedSemester);
   } catch (error) {
-    res.send("Semester update failed.");
-    // console.error(error);
+    next(error);
   }
 });
 

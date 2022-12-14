@@ -2,9 +2,9 @@ const prisma = require("../db/prisma");
 const bcrypt = require("bcrypt");
 const { userRequired, adminRequired } = require("./utils");
 const userRouter = require("express").Router();
-
 const SALT_ROUNDS = 10;
 
+// Create   Allows admin to create a new user.
 userRouter.post("/", adminRequired, async (req, res, next) => {
   try {
     const {
@@ -37,16 +37,16 @@ userRouter.post("/", adminRequired, async (req, res, next) => {
       res.send({ user });
     } else res.send("A user with that email already exists.");
   } catch (error) {
-    res.send("A user with that email already exists.");
-    // console.error(error);
+    next(error);
   }
 });
 
+// Read   Read single user by id or email.
+//        Returns current user if neither field is provided.
 userRouter.get("/", adminRequired, async (req, res, next) => {
-  const { email, id } = req.body;
-  let user;
-
   try {
+    const { email, id } = req.body;
+    let user;
     if (id) {
       user = await prisma.User.findUnique({
         where: {
@@ -71,22 +71,20 @@ userRouter.get("/", adminRequired, async (req, res, next) => {
   }
 });
 
+// Read   All users
 userRouter.get("/all", adminRequired, async (req, res, next) => {
-  let users;
-
   try {
-    users = await prisma.User.findMany({});
-    if (users) {
-      for (const user of users) {
-        delete user.password;
-      }
-      res.send(users);
-    } else res.send(`No users found.`);
+    const users = await prisma.User.findMany({});
+    for (const user of users) {
+      delete user.password;
+    }
+    res.send(users);
   } catch (error) {
     next(error);
   }
 });
 
+// Update   Allows user to update their own information
 userRouter.patch("/", userRequired, async (req, res, next) => {
   try {
     const user = req.user;
@@ -107,12 +105,13 @@ userRouter.patch("/", userRequired, async (req, res, next) => {
       },
     });
     delete updatedUser.password;
-    res.send({ updatedUser });
+    res.send(updatedUser);
   } catch (error) {
     next(error);
   }
 });
 
+// Update   Allows admin to update any user's information
 userRouter.patch("/:id", adminRequired, async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -121,46 +120,45 @@ userRouter.patch("/:id", adminRequired, async (req, res, next) => {
         id: +id,
       },
     });
-    if (user) {
-      const {
-        first_name,
-        last_name,
-        email,
-        preferred_name,
-        gpa,
-        address,
-        phone,
-        password,
-        is_admin,
-      } = req.body;
-      const updatedUser = await prisma.User.update({
-        where: {
-          id: +id,
-        },
-        data: {
-          first_name: first_name ? first_name : user.first_name,
-          last_name: last_name ? last_name : user.last_name,
-          email: email ? email : user.email,
-          preferred_name: preferred_name ? preferred_name : user.preferred_name,
-          gpa: gpa ? gpa : user.gpa,
-          address: address ? address : user.address,
-          phone: phone ? phone : user.phone,
-          password: password ? password : user.password,
-          is_admin: is_admin || is_admin === false ? is_admin : user.is_admin,
-        },
-      });
-      delete updatedUser.password;
-      res.send({ updatedUser });
-    }
+    const {
+      first_name,
+      last_name,
+      email,
+      preferred_name,
+      gpa,
+      address,
+      phone,
+      password,
+      is_admin,
+    } = req.body;
+    const updatedUser = await prisma.User.update({
+      where: {
+        id: +id,
+      },
+      data: {
+        first_name: first_name ? first_name : user.first_name,
+        last_name: last_name ? last_name : user.last_name,
+        email: email ? email : user.email,
+        preferred_name: preferred_name ? preferred_name : user.preferred_name,
+        gpa: gpa ? gpa : user.gpa,
+        address: address ? address : user.address,
+        phone: phone ? phone : user.phone,
+        password: password ? password : user.password,
+        is_admin: is_admin || is_admin === false ? is_admin : user.is_admin,
+      },
+    });
+    delete updatedUser.password;
+    res.send(updatedUser);
   } catch (error) {
     next(error);
   }
 });
 
+//  Delete    Delete user by email or id.
 userRouter.delete("/", adminRequired, async (req, res, next) => {
-  const { email, id } = req.body;
-  let user;
   try {
+    const { email, id } = req.body;
+    let user;
     if (id) {
       user = await prisma.User.findUnique({
         where: {
@@ -174,20 +172,18 @@ userRouter.delete("/", adminRequired, async (req, res, next) => {
         },
       });
     }
-    if (user) {
-      if (user.id === req.user.id) {
-        res.send("You can't delete yourself, dummy.");
-      } else {
-        await prisma.courseUser.deleteMany({ where: { user_id: user.id } });
-        const deletedUser = await prisma.User.delete({
-          where: {
-            id: user.id,
-          },
-        });
-        delete deletedUser.password;
-        res.send(deletedUser);
-      }
-    } else res.send(`No account found.`);
+    if (user.id === req.user.id) {
+      res.send("You can't delete yourself, dummy.");
+    } else {
+      await prisma.courseUser.deleteMany({ where: { user_id: user.id } });
+      const deletedUser = await prisma.User.delete({
+        where: {
+          id: user.id,
+        },
+      });
+      delete deletedUser.password;
+      res.send(deletedUser);
+    }
   } catch (error) {
     next(error);
   }

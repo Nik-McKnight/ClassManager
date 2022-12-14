@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 
 // Checks that any user is logged in
-
 const userRequired = (req, res, next) => {
   if (!req.signedCookies.token) {
     res.status(401).send({
@@ -16,8 +15,20 @@ const userRequired = (req, res, next) => {
   next();
 };
 
-//checks that a user is logged in as an admin
+// Checks that any user is logged in
+const noUserRequired = (req, res, next) => {
+  if (req.signedCookies.token) {
+    res.status(401).send({
+      loggedIn: true,
+      message: "You must log out to perform this action",
+    });
+    return;
+  }
+  req.user = null;
+  next();
+};
 
+//checks that a user is logged in as an admin
 const adminRequired = (req, res, next) => {
   if (!req.signedCookies.token) {
     res.status(401).send({
@@ -41,4 +52,4 @@ const adminRequired = (req, res, next) => {
   }
 };
 
-module.exports = { userRequired, adminRequired };
+module.exports = { userRequired, noUserRequired, adminRequired };

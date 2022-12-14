@@ -14,15 +14,13 @@ eventRouter.post("/", adminRequired, async (req, res, next) => {
         is_holiday,
       },
     });
-    if (event) {
-      res.send(event);
-    }
+    res.send(event);
   } catch (error) {
-    console.error(error);
+    next(error);
   }
 });
 
-// Read
+// Read   Single event if id is provided, all events otherwise.
 eventRouter.get("/", async (req, res, next) => {
   try {
     const { id } = req.body;
@@ -33,18 +31,14 @@ eventRouter.get("/", async (req, res, next) => {
           id: +id,
         },
       });
-      if (event) {
-        res.send(event);
-      }
+      res.send(event);
     } else {
       // Read     Read all events
       const events = await prisma.Event.findMany({});
-      if (events) {
-        res.send(events);
-      }
+      res.send(events);
     }
   } catch (error) {
-    console.error(error);
+    next(error);
   }
 });
 
@@ -69,11 +63,9 @@ eventRouter.patch("/", adminRequired, async (req, res, next) => {
           is_holiday || is_holiday === false ? is_holiday : event.is_holiday,
       },
     });
-    if (updatedEvent) {
-      res.send(updatedEvent);
-    }
+    res.send(updatedEvent);
   } catch (error) {
-    console.error(error);
+    next(error);
   }
 });
 

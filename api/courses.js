@@ -2,8 +2,8 @@ const prisma = require("../db/prisma");
 const { userRequired, adminRequired } = require("./utils");
 const courseRouter = require("express").Router();
 
+// Create
 courseRouter.post("/", adminRequired, async (req, res, next) => {
-  let course;
   try {
     const {
       name,
@@ -24,7 +24,7 @@ courseRouter.post("/", adminRequired, async (req, res, next) => {
       enrollment_open,
       asynchronous,
     } = req.body;
-    course = await prisma.Course.create({
+    const course = await prisma.Course.create({
       data: {
         name,
         course_number,
@@ -45,16 +45,14 @@ courseRouter.post("/", adminRequired, async (req, res, next) => {
         asynchronous,
       },
     });
+    res.send(course);
   } catch (error) {
-    console.log(error);
+    next(error);
   }
-  if (course) {
-    res.send({ course });
-  } else res.send("Course was not created.");
 });
 
+// Create   Duplicate course
 courseRouter.post("/duplicate", adminRequired, async (req, res, next) => {
-  let course, duplicateCourse;
   try {
     const {
       id,
@@ -76,13 +74,13 @@ courseRouter.post("/duplicate", adminRequired, async (req, res, next) => {
       enrollment_open,
       asynchronous,
     } = req.body;
-    course = await prisma.Course.findUnique({
+    const course = await prisma.Course.findUnique({
       where: {
         id: +id,
       },
     });
     if (course) {
-      duplicateCourse = await prisma.Course.create({
+      const duplicateCourse = await prisma.Course.create({
         data: {
           name: name ? name : course.name,
           course_number: course_number ? course_number : course.course_number,
@@ -110,19 +108,17 @@ courseRouter.post("/duplicate", adminRequired, async (req, res, next) => {
               : course.asynchronous,
         },
       });
+      res.send(duplicateCourse);
     }
   } catch (error) {
-    console.log(error);
+    next(error);
   }
-  if (duplicateCourse) {
-    res.send({ duplicateCourse, course });
-  } else res.send("Course was not duplicated.");
 });
 
+// Read
 courseRouter.get("/", async (req, res, next) => {
-  const { id } = req.body;
-
   try {
+    const { id } = req.body;
     if (id) {
       const course = await prisma.Course.findUnique({
         where: {
@@ -131,7 +127,7 @@ courseRouter.get("/", async (req, res, next) => {
       });
       if (course) {
         res.send(course);
-      } else res.send(`No course found.`);
+      } else res.send(`No course found with that ID.`);
     } else {
       const courses = await prisma.Course.findMany({});
       if (courses) {
@@ -143,6 +139,7 @@ courseRouter.get("/", async (req, res, next) => {
   }
 });
 
+// Update
 courseRouter.patch("/:id", adminRequired, async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -202,18 +199,18 @@ courseRouter.patch("/:id", adminRequired, async (req, res, next) => {
               : course.asynchronous,
         },
       });
-      res.send({ updatedCourse });
+      res.send(updatedCourse);
     }
   } catch (error) {
     next(error);
   }
 });
 
+// Delete
 courseRouter.delete("/", adminRequired, async (req, res, next) => {
-  const { id } = req.body;
-  let course;
   try {
-    course = await prisma.Course.findUnique({
+    const { id } = req.body;
+    const course = await prisma.Course.findUnique({
       where: {
         id: +id,
       },

@@ -167,7 +167,7 @@ const initDb = async () => {
       }
     );
   } catch (error) {
-    console.error(error);
+    next(error);
   } finally {
     console.log("Data has been seeded.");
     await prisma.$disconnect();

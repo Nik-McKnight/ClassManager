@@ -2,13 +2,12 @@ const prisma = require("../db/prisma");
 const { userRequired, adminRequired } = require("./utils");
 const courseUserRouter = require("express").Router();
 
-//create   add self to class
+// Create   add self to class
 courseUserRouter.post("/", userRequired, async (req, res, next) => {
-  let courseUser;
   try {
     const { course_id, is_instructor, is_ta, course_grade, is_enrolled } =
       req.body;
-    courseUser = await prisma.CourseUser.create({
+    const courseUser = await prisma.CourseUser.create({
       data: {
         course_id,
         user_id: req.user.id,
@@ -18,22 +17,19 @@ courseUserRouter.post("/", userRequired, async (req, res, next) => {
         is_enrolled: is_enrolled === true,
       },
     });
+    res.send(courseUser);
   } catch (error) {
-    console.log(error);
+    next(error);
   }
-  if (courseUser) {
-    res.send({ courseUser });
-  } else res.send("User was not added to course.");
 });
 
-//create   add another user to class
+// Create   add another user to class
 courseUserRouter.post("/:id", adminRequired, async (req, res, next) => {
-  let courseUser;
   try {
     const { id } = req.params;
     const { course_id, is_instructor, is_ta, course_grade, is_enrolled } =
       req.body;
-    courseUser = await prisma.CourseUser.create({
+    const courseUser = await prisma.CourseUser.create({
       data: {
         course_id,
         user_id: +id,
@@ -43,20 +39,16 @@ courseUserRouter.post("/:id", adminRequired, async (req, res, next) => {
         is_enrolled: is_enrolled === true,
       },
     });
+    res.send(courseUser);
   } catch (error) {
-    console.log(error);
+    next(error);
   }
-  if (courseUser) {
-    res.send({ courseUser });
-  } else res.send("User was not added to course.");
 });
 
-//read     all courseusers
+// Read     all courseusers
 courseUserRouter.get("/all", adminRequired, async (req, res, next) => {
-  let courseUsers;
-
   try {
-    courseUsers = await prisma.CourseUser.findMany({
+    const courseUsers = await prisma.CourseUser.findMany({
       include: {
         course: true,
         user: {
@@ -69,21 +61,17 @@ courseUserRouter.get("/all", adminRequired, async (req, res, next) => {
         },
       },
     });
-    if (courseUsers) {
-      res.send(courseUsers);
-    } else res.send(`No courseUsers found.`);
+    res.send(courseUsers);
   } catch (error) {
     next(error);
   }
 });
 
-//read     all classes for self
+// Read     all classes for self
 courseUserRouter.get("/", userRequired, async (req, res, next) => {
-  let courseUsers;
   try {
     const user = req.user;
-    const { user_id } = req.body;
-    courseUsers = await prisma.CourseUser.findMany({
+    const courseUsers = await prisma.CourseUser.findMany({
       where: {
         user_id: user.id,
       },
@@ -91,20 +79,17 @@ courseUserRouter.get("/", userRequired, async (req, res, next) => {
         course: true,
       },
     });
-    if (courseUsers) {
-      res.send(courseUsers);
-    } else res.send(`No courseUsers found.`);
+    res.send(courseUsers);
   } catch (error) {
     next(error);
   }
 });
 
-//read     all classes for another user
+// Read     all classes for another user
 courseUserRouter.get("/user", adminRequired, async (req, res, next) => {
-  let courseUsers;
   try {
     const { user_id } = req.body;
-    courseUsers = await prisma.CourseUser.findMany({
+    const courseUsers = await prisma.CourseUser.findMany({
       where: {
         user_id: user_id,
       },
@@ -112,20 +97,17 @@ courseUserRouter.get("/user", adminRequired, async (req, res, next) => {
         course: true,
       },
     });
-    if (courseUsers) {
-      res.send(courseUsers);
-    } else res.send(`No courseUsers found.`);
+    res.send(courseUsers);
   } catch (error) {
     next(error);
   }
 });
 
-//read     all users in one class
+// Read     all users in one class
 courseUserRouter.get("/course", userRequired, async (req, res, next) => {
-  let courseUsers;
   try {
     const { course_id } = req.body;
-    courseUsers = await prisma.CourseUser.findMany({
+    const courseUsers = await prisma.CourseUser.findMany({
       where: {
         course_id: course_id,
       },
@@ -141,15 +123,13 @@ courseUserRouter.get("/course", userRequired, async (req, res, next) => {
         },
       },
     });
-    if (courseUsers) {
-      res.send(courseUsers);
-    } else res.send(`No courseUsers found.`);
+    res.send(courseUsers);
   } catch (error) {
     next(error);
   }
 });
 
-//update   one user  is_enrolled
+// Update   one user  is_enrolled
 courseUserRouter.patch("/", userRequired, async (req, res, next) => {
   try {
     const { user_id, course_id, is_enrolled } = req.body;
@@ -170,13 +150,13 @@ courseUserRouter.patch("/", userRequired, async (req, res, next) => {
             : courseUser[0].is_enrolled,
       },
     });
-    res.send({ updatedCourseUser });
+    res.send(updatedCourseUser);
   } catch (error) {
     next(error);
   }
 });
 
-//update   one user   is_instructor  is_ta   course_grade    is_enrolled
+// Update   one user   is_instructor  is_ta   course_grade    is_enrolled
 courseUserRouter.patch(
   "/:courseUser_id",
   adminRequired,
@@ -195,14 +175,14 @@ courseUserRouter.patch(
           is_enrolled,
         },
       });
-      res.send({ updatedCourseUser });
+      res.send(updatedCourseUser);
     } catch (error) {
       next(error);
     }
   }
 );
 
-//update   All users in one class  is_enrolled
+// Update   All users in one class  is_enrolled
 courseUserRouter.patch(
   "/:course_id/all",
   adminRequired,
@@ -218,18 +198,18 @@ courseUserRouter.patch(
           is_enrolled,
         },
       });
-      res.send({ updatedCourseUsers });
+      res.send(updatedCourseUsers);
     } catch (error) {
       next(error);
     }
   }
 );
 
-//delete   drop class before semester starts
+// Delete   drop class before semester starts
 courseUserRouter.delete("/", userRequired, async (req, res, next) => {
-  const { course_id } = req.body;
-  const user_id = req.user.id;
   try {
+    const { course_id } = req.body;
+    const user_id = req.user.id;
     const droppedCourse = await prisma.CourseUser.deleteMany({
       where: {
         user_id: +user_id,
@@ -242,13 +222,13 @@ courseUserRouter.delete("/", userRequired, async (req, res, next) => {
   }
 });
 
-//delete   Remove user from class before semester starts
+// Delete   Remove user from class before semester starts
 courseUserRouter.delete(
   "/:courseUser_id",
   adminRequired,
   async (req, res, next) => {
-    const { courseUser_id } = req.params;
     try {
+      const { courseUser_id } = req.params;
       const droppedCourse = await prisma.CourseUser.deleteMany({
         where: {
           id: +courseUser_id,
