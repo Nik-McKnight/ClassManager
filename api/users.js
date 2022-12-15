@@ -1,6 +1,6 @@
 const prisma = require("../db/prisma");
 const bcrypt = require("bcrypt");
-const { userRequired, adminRequired } = require("./utils");
+const { userRequired, adminRequired, generateId } = require("./utils");
 const userRouter = require("express").Router();
 const SALT_ROUNDS = 10;
 
@@ -18,7 +18,21 @@ userRouter.post("/", adminRequired, async (req, res, next) => {
       password,
       is_admin,
     } = req.body;
+
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const checkEmail = await prisma.User.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (checkEmail) {
+      res.send("A user with that email already exists.");
+    }
+
+    const school_id = await generateId(first_name, last_name);
+
     const user = await prisma.User.create({
       data: {
         first_name,
@@ -29,23 +43,24 @@ userRouter.post("/", adminRequired, async (req, res, next) => {
         address,
         phone,
         password: hashedPassword,
-        is_admin: is_admin || is_admin === false ? is_admin : user.is_admin,
+        is_admin: is_admin ? is_admin : false,
+        school_id,
       },
     });
-    if (user) {
-      delete user.password;
-      res.send({ user });
-    } else res.send("A user with that email already exists.");
+
+    delete user.password;
+
+    res.send(user);
   } catch (error) {
     next(error);
   }
 });
 
-// Read   Read single user by id or email.
-//        Returns current user if neither field is provided.
+// Read   Read single user by id, school_id, or email.
+//        Returns current user if none of these are provided.
 userRouter.get("/", adminRequired, async (req, res, next) => {
   try {
-    const { email, id } = req.body;
+    const { email, id, school_id } = req.body;
     let user;
     if (id) {
       user = await prisma.User.findUnique({
@@ -53,15 +68,22 @@ userRouter.get("/", adminRequired, async (req, res, next) => {
           id: +id,
         },
       });
+    } else if (school_id) {
+      user = await prisma.User.findUnique({
+        where: {
+          school_id,
+        },
+      });
     } else if (email) {
       user = await prisma.User.findUnique({
         where: {
-          email: email,
+          email,
         },
       });
     } else {
       user = req.user;
     }
+
     if (user) {
       delete user.password;
       res.send(user);

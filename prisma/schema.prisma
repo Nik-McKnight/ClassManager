@@ -10,7 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Convert days of week to enum?
 model Semester {
   id         Int      @id @default(autoincrement())
   name       String   @unique @db.VarChar(255)
@@ -58,6 +57,7 @@ model Prerequisite {
 
 model User {
   id             Int          @id @default(autoincrement())
+  school_id      String       @unique @db.VarChar(255)
   first_name     String       @db.VarChar(255)
   last_name      String       @db.VarChar(255)
   preferred_name String       @db.VarChar(255)

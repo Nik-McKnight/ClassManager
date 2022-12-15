@@ -1,3 +1,4 @@
+const prisma = require("../db/prisma");
 const jwt = require("jsonwebtoken");
 
 // Checks that any user is logged in
@@ -52,4 +53,19 @@ const adminRequired = (req, res, next) => {
   }
 };
 
-module.exports = { userRequired, noUserRequired, adminRequired };
+async function generateId(first, last) {
+  while (true) {
+    const num = "" + Math.floor(Math.random() * 100000);
+    const result = (first[0] + last[0] + num.padStart(5, "0")).toUpperCase();
+    let checkId = await prisma.User.findUnique({
+      where: {
+        school_id: result,
+      },
+    });
+    if (!checkId) {
+      return result;
+    }
+  }
+}
+
+module.exports = { userRequired, noUserRequired, adminRequired, generateId };

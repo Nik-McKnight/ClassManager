@@ -1,7 +1,7 @@
 const prisma = require("../db/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { userRequired, noUserRequired } = require("./utils");
+const { userRequired, noUserRequired, generateId } = require("./utils");
 const authRouter = require("express").Router();
 
 const { JWT_SECRET } = process.env;
@@ -32,16 +32,19 @@ authRouter.post("/register", noUserRequired, async (req, res, next) => {
       res.send("A user with that email already exists.");
     }
 
+    const school_id = await generateId(first_name, last_name);
+
     const user = await prisma.User.create({
       data: {
-        first_name: first_name,
-        last_name: last_name,
-        email: email,
-        preferred_name: preferred_name,
+        first_name,
+        last_name,
+        email,
+        preferred_name,
         gpa: gpa ? gpa : 4.0,
-        address: address,
-        phone: phone,
+        address,
+        phone,
         password: hashedPassword,
+        school_id,
       },
     });
 

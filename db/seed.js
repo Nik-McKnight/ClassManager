@@ -101,8 +101,12 @@ const createPrerequisites = async (prerequisites) => {
 
 const createUsers = async (users) => {
   await prisma.User.deleteMany({});
+  let count = 0;
   for (const user of users) {
     const hashedPassword = await bcrypt.hash(user[7], SALT_ROUNDS);
+
+    const school_id = user[0][0] + user[1][0] + ("" + count).padStart(5, "0");
+
     await prisma.User.create({
       data: {
         first_name: user[0],
@@ -114,8 +118,10 @@ const createUsers = async (users) => {
         phone: user[6],
         password: hashedPassword,
         is_admin: user[8] == "TRUE",
+        school_id,
       },
     });
+    count++;
   }
   console.log("Users seeded.");
 };
