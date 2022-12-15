@@ -2,6 +2,12 @@ const prisma = require("../db/prisma");
 const { adminRequired } = require("./utils");
 const prerequisiteRouter = require("express").Router();
 
+prerequisiteRouter.get("/health", (req, res, next) => {
+  res.send({
+    healthy: true,
+  });
+});
+
 // Create   Create prerequisite
 prerequisiteRouter.post("/", adminRequired, async (req, res, next) => {
   try {

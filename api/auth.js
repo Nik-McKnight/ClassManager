@@ -7,6 +7,12 @@ const authRouter = require("express").Router();
 const { JWT_SECRET } = process.env;
 const SALT_ROUNDS = 10;
 
+authRouter.get("/health", (req, res, next) => {
+  res.send({
+    healthy: true,
+  });
+});
+
 authRouter.post("/register", noUserRequired, async (req, res, next) => {
   try {
     const {
@@ -29,6 +35,7 @@ authRouter.post("/register", noUserRequired, async (req, res, next) => {
     });
 
     if (checkEmail) {
+      res.status(401);
       res.send("A user with that email already exists.");
     }
 

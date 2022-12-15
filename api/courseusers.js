@@ -2,6 +2,12 @@ const prisma = require("../db/prisma");
 const { userRequired, adminRequired } = require("./utils");
 const courseUserRouter = require("express").Router();
 
+courseUserRouter.get("/health", (req, res, next) => {
+  res.send({
+    healthy: true,
+  });
+});
+
 // Create   add self to class
 courseUserRouter.post("/", userRequired, async (req, res, next) => {
   try {

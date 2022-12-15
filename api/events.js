@@ -2,6 +2,12 @@ const prisma = require("../db/prisma");
 const { adminRequired } = require("./utils");
 const eventRouter = require("express").Router();
 
+eventRouter.get("/health", (req, res, next) => {
+  res.send({
+    healthy: true,
+  });
+});
+
 // Create   Create new event
 eventRouter.post("/", adminRequired, async (req, res, next) => {
   try {

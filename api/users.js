@@ -4,6 +4,12 @@ const { userRequired, adminRequired, generateId } = require("./utils");
 const userRouter = require("express").Router();
 const SALT_ROUNDS = 10;
 
+userRouter.get("/health", (req, res, next) => {
+  res.send({
+    healthy: true,
+  });
+});
+
 // Create   Allows admin to create a new user.
 userRouter.post("/", adminRequired, async (req, res, next) => {
   try {
@@ -176,10 +182,10 @@ userRouter.patch("/:id", adminRequired, async (req, res, next) => {
   }
 });
 
-//  Delete    Delete user by email or id.
+//  Delete    Delete user by email, id, or school_id.
 userRouter.delete("/", adminRequired, async (req, res, next) => {
   try {
-    const { email, id } = req.body;
+    const { email, id, school_id } = req.body;
     let user;
     if (id) {
       user = await prisma.User.findUnique({
@@ -187,10 +193,16 @@ userRouter.delete("/", adminRequired, async (req, res, next) => {
           id: +id,
         },
       });
+    } else if (school_id) {
+      user = await prisma.User.findUnique({
+        where: {
+          school_id,
+        },
+      });
     } else if (email) {
       user = await prisma.User.findUnique({
         where: {
-          email: email,
+          email,
         },
       });
     }
